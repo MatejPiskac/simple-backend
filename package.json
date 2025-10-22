@@ -1,18 +1,27 @@
 {
-  "name": "simple-backend",
+  "name": "fullstack-chat",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
+  "description": "Fullstack Astro + Express + Socket.IO app",
   "scripts": {
-    "start": "node index.js",
     "dev": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx astro build --root frontend",
+    "start": "node index.js",
+    "test": "echo \"No tests specified\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "A simple Node.js backend using Express and Socket.IO.",
   "dependencies": {
+    "@astrojs/node": "^9.5.0",
+    "@astrojs/react": "^4.4.0",
+    "@tailwindcss/vite": "^4.1.15",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "astro": "^5.14.8",
     "express": "^4.19.2",
-    "socket.io": "^4.7.2"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.8.1",
+    "tailwindcss": "^4.1.15"
   }
 }

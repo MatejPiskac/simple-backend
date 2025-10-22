@@ -1,80 +1,57 @@
-/*
- * Entry point for a simple Node.js backend.
- *
- * This application uses Express to serve HTTP requests and Socket.IO to
- * demonstrate real‑time communication. When you start the server it
- * exposes two endpoints:
- *   GET /        → returns a JSON message indicating the server is running
- *   Socket.IO    → allows clients to connect and receive a welcome event
- *
- * To run the server use:
- *
- *   npm install
- *   npm start
- *
- * The server will listen on the port defined by the PORT environment
- * variable or default to 3000.
- */
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import { Pool } from "pg";
+import path from "path";
+import { fileURLToPath } from "url";
+import { handler as astroHandler } from "./frontend/dist/server/entry.mjs";
 
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-
-// Create an Express application
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-
-// Use JSON middleware to automatically parse JSON bodies
-app.use(express.json());
-
-// Create an HTTP server and attach Socket.IO
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-  },
+const io = new Server(server, { cors: { origin: "*" } });
+
+// 🔗 Connect to PostgreSQL using Render's environment variable
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
 });
 
-// Basic health check route
-app.get('/', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'Backend is working!',
-    timestamp: new Date().toISOString(),
+// ✅ Test DB connection
+async function testDatabaseConnection() {
+  try {
+    const res = await pool.query("SELECT NOW() AS current_time");
+    console.log("✅ Database connected! Current time:", res.rows[0].current_time);
+  } catch (err) {
+    console.error("❌ Database connection failed:", err.message);
+  }
+}
+testDatabaseConnection();
+
+// Example API route
+app.get("/api/hello", (req, res) => {
+  res.json({ message: "Hello from Express API!" });
+});
+
+// Example Socket.IO chat
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+  socket.emit("welcome", { message: "Connected to backend!" });
+
+  socket.on("chat message", (msg) => {
+    io.emit("chat message", msg);
   });
 });
 
-// Example API route for demonstration
-app.get('/api/greet/:name', (req, res) => {
-  const { name } = req.params;
-  res.json({ greeting: `Hello, ${name}!` });
+// Serve Astro built frontend
+app.use(express.static(path.join(__dirname, "frontend/dist/client")));
+app.all("*", async (req, res, next) => {
+  try {
+    await astroHandler(req, res, next);
+  } catch (err) {
+    next(err);
+  }
 });
 
-// Configure Socket.IO connection
-io.on('connection', (socket) => {
-  console.log('A client connected:', socket.id);
-
-  // Emit a welcome event when a client connects
-  socket.emit('welcome', {
-    message: 'Welcome to the Socket.IO server!',
-    id: socket.id,
-  });
-
-  // Listen for chat messages from clients
-  socket.on('chat message', (msg) => {
-    console.log('Received chat message:', msg);
-    // Broadcast the message to all connected clients
-    io.emit('chat message', msg);
-  });
-
-  // Handle client disconnect
-  socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
-  });
-});
-
-// Determine the port to listen on
 const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+server.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
