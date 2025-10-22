@@ -18,6 +18,7 @@
     "@types/react-dom": "^19.2.2",
     "astro": "^5.14.8",
     "express": "^4.19.2",
+    "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "socket.io": "^4.7.2",
