@@ -1,5 +1,7 @@
 ---
 import ChatBox from '../components/ChatBox.jsx';
+import AuthForm from '../components/AuthForm.jsx';
+import { AuthProvider } from '../components/AuthContext.jsx';
 ---
 
 <html>
@@ -7,6 +9,11 @@ import ChatBox from '../components/ChatBox.jsx';
     <title>Chat App</title>
   </head>
   <body class="bg-gray-100">
-    <ChatBox client:load />
+    <AuthProvider client:load>
+      <div class="max-w-3xl mx-auto p-4 space-y-6">
+        <AuthForm />
+        <ChatBox client:load />
+      </div>
+    </AuthProvider>
   </body>
 </html>
