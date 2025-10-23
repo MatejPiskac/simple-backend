@@ -13,7 +13,7 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 // 🔗 Connect to PostgreSQL using Render's environment variable
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.INTERNAL_DB_URL,
   ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
 });
 
